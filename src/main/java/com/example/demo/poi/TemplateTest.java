@@ -1,9 +1,11 @@
 package com.example.demo.poi;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
@@ -23,21 +25,9 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTrPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTVerticalJc;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STOnOff;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STVerticalJc;
+import org.springframework.core.io.ClassPathResource;
 
-public class SimpleTable {
-
-	/**
-	 * 
-	 * @param tableData
-	 * @param tableFit
-	 * @return
-	 * @throws Exception
-	 */
-	public XWPFDocument createTable(List<List<String>> tableData, TableFit tableFit) throws Exception {
-
-		String[][] array = tableData.stream().map(List::toArray).toArray(String[][]::new);
-		return createTable(array, tableFit);
-	}
+public class TemplateTest {
 
 	/**
 	 * 
@@ -45,7 +35,7 @@ public class SimpleTable {
 	 * @return
 	 * @throws Exception
 	 */
-	public XWPFDocument createTable(String[][] tableData, TableFit tableFit) throws Exception {
+	public XWPFTable createTable(String[][] tableData, TableFit tableFit) throws Exception {
 		XWPFDocument doc = new XWPFDocument();
 
 		int nRows = tableData.length;
@@ -87,12 +77,7 @@ public class SimpleTable {
 
 				// create a run to contain the content
 				XWPFRun rh = para.createRun();
-				// style cell as desired
-				if (colCt == nCols - 1) {
-					// last column is 10pt Courier
-					rh.setFontSize(10);
-					rh.setFontFamily("Courier");
-				}
+				
 				if (rowCt == 0) {
 					// header row
 					rh.setText(tableData[rowCt][colCt]);
@@ -103,35 +88,55 @@ public class SimpleTable {
 					para.setAlignment(ParagraphAlignment.LEFT);
 				}
 				colCt++;
-			} // for cell
+			} 
 			colCt = 0;
 			rowCt++;
-		} // for row
+		} 
 
-		return doc;
+		if (doc != null) {
+			doc.close();
+		}
+		return table;
+	}
+
+	public void update(XWPFDocument doc, XWPFTable table) {
+
+		doc.setTable(0, table);
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		SimpleTable simpleTable = new SimpleTable();
-		String[][] tableData = new String[3][3];
-		tableData[0][0] = "כותרת1";
-		tableData[0][1] = "כותרת2";
-		tableData[0][2] = "כותרת3";
-		tableData[1][0] = "טקסט1";
-		tableData[1][1] = "טקסט2";
-		tableData[1][2] = "טקסט3";
-		tableData[2][0] = "טקסט4";
-		tableData[2][1] = "טקסט5";
-		tableData[2][2] = "טקסט6";
-		
-		TableFit tableFit = new TableFit() {
-		};
-		XWPFDocument createTable = simpleTable.createTable(tableData,tableFit);
-		
-		String fileName = LocalDate.now().toString()+".docx";
-		try (OutputStream out = new FileOutputStream(fileName)) {
-			createTable.write(out);
+		String outputPath = new Date().getTime() + ".docx";
+		OutputStream out = null;
+		try {
+			File file = new ClassPathResource("empty.docx").getFile();
+			XWPFDocument doc = new XWPFDocument(new FileInputStream(file));
+
+			TemplateTest simpleTable = new TemplateTest();
+			String[][] tableData = new String[3][3];
+			tableData[0][0] = "כותרת1";
+			tableData[0][1] = "כותרת2";
+			tableData[0][2] = "כותרת3";
+			tableData[1][0] = "טקסט1";
+			tableData[1][1] = "טקסט2";
+			tableData[1][2] = "טקסט3";
+			tableData[2][0] = "טקסט4";
+			tableData[2][1] = "טקסט5";
+			tableData[2][2] = "טקסט6";
+
+			TableFit tableFit = new TableFit() {
+			};
+			XWPFTable createTable = simpleTable.createTable(tableData, tableFit);
+
+			simpleTable.update(doc, createTable);
+
+			out = new FileOutputStream(new File(outputPath));
+			doc.write(out);
+			out.flush();
+			out.close();
+			doc.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
