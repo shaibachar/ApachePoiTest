@@ -19,14 +19,14 @@ public class DemoApplicationTests {
 	@Test
 	public void contextLoads() {
 		try {
-			String pdfFilename = "pdf path";
+			String pdfFilename = "/home/shai/Downloads/תגובה לסוגיות המוסכמות בבית המשפט קמא - בראי המשפט הבינלאומי להגשה";
 			PDDocument document = PDDocument.load(new File(pdfFilename+".pdf"));
 			PDFRenderer pdfRenderer = new PDFRenderer(document);
 			for (int page = 0; page < document.getNumberOfPages(); ++page) {
 				BufferedImage bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
 
 				// suffix in filename will be used as the file format
-				ImageIOUtil.writeImage(bim, pdfFilename + "-" + (page + 1) + ".jpg", 300);
+				ImageIOUtil.writeImage(bim, "/home/shai/Downloads/temp/a" + "-" + (page + 1) + ".jpg", 300);
 			}
 			document.close();
 		} catch (Exception e) {
